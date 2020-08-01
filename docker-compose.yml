@@ -1,0 +1,44 @@
+version: '3'
+services:
+
+  compose-program-service:
+    restart: always
+    image: jtmlmass/docker-compose-practice
+    environment:
+      - SERVER_PORT=8080
+      - spring.datasource.url=jdbc:mysql://mariadb:3306/pollsApp?useUnicode=true&characterEncoding=UTF-8
+    networks:
+      - compose-program
+    ports:
+      - 8080:8080
+    depends_on:
+      - mariadb
+  ha-proxy:
+    restart: always
+    networks:
+      - compose-program
+    depends_on:
+      - compose-program-service
+    image: haproxy:2.0.2
+    volumes:
+      - ./etc:/usr/local/etc/haproxy
+    ports:
+      - 81:80
+  mariadb:
+    restart: always
+    image: mariadb:10.2
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD:  ml272718
+      MYSQL_ROOT_HOST:  tomas
+      MYSQL_DATABASE: pollsApp
+    volumes:
+      - mysql_db:/var/lib/mysql
+    networks:
+      - compose-program
+volumes:
+  mysql_db:
+
+networks:
+  compose-program:
